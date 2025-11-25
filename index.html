@@ -11,28 +11,30 @@
 <header>
   <h1>CS Major – Liga Typów</h1>
   <nav>
-    <button onclick="showTab('types')">Typy</button>
-    <button onclick="showTab('ranking')">Ranking</button>
-    <button id="adminTabBtn" onclick="showTab('admin')">Admin</button>
-    <button id="logoutBtn" onclick="logout()" style="display:none">Wyloguj</button>
+    <button id="tabTypes">Typy</button>
+    <button id="tabRanking">Ranking</button>
+    <button id="adminTabBtn" style="display:none">Admin</button>
+    <button id="logoutBtn" style="display:none">Wyloguj</button>
   </nav>
 </header>
 
 <!-- Logowanie / Rejestracja -->
 <div id="loginRegister" class="modal">
   <h2>Logowanie / Rejestracja</h2>
-  <button onclick="showLogin()">Zaloguj się</button>
-  <button onclick="showRegister()">Zarejestruj się</button>
+  <button id="showLoginBtn">Zaloguj się</button>
+  <button id="showRegisterBtn">Zarejestruj się</button>
+
   <div id="loginForm" style="display:none">
     <input type="text" id="loginNick" placeholder="Nick">
     <input type="password" id="loginPassword" placeholder="Hasło">
     <label><input type="checkbox" id="rememberMe"> Zapamiętaj mnie</label><br>
-    <button onclick="loginUser()">Zaloguj</button>
+    <button id="btnLogin">Zaloguj</button>
   </div>
+
   <div id="registerForm" style="display:none">
     <input type="text" id="regNick" placeholder="Nick">
     <input type="password" id="regPassword" placeholder="Hasło">
-    <button onclick="registerUser()">Zarejestruj</button>
+    <button id="btnRegister">Zarejestruj</button>
   </div>
 </div>
 
@@ -40,7 +42,7 @@
 <div id="types" class="tabContent">
   <h2>Oddaj typy</h2>
   <div id="typesContainer"></div>
-  <button onclick="saveMyTypes()">Zapisz typy</button>
+  <button id="saveTypesBtn">Zapisz typy</button>
 </div>
 
 <!-- Ranking -->
@@ -52,9 +54,9 @@
 <!-- Admin -->
 <div id="admin" class="tabContent">
   <h2>Panel Admina</h2>
-  <button onclick="addMatch()">Dodaj mecz</button>
+  <button id="addMatchBtn">Dodaj mecz</button>
   <div id="matchesContainer"></div>
-  <button onclick="saveResults()">Zapisz wyniki</button>
+  <button id="saveResultsBtn">Zapisz wyniki</button>
 </div>
 
 </body>
