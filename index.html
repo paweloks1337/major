@@ -2,42 +2,57 @@
 <html lang="pl">
 <head>
 <meta charset="UTF-8">
-<title>CS Major – Mini Liga</title>
+<title>CS Major – Liga Typów</title>
 <link rel="stylesheet" href="style.css">
 <script src="script.js" defer></script>
 </head>
 <body>
 
 <header>
-  <h1>CS Major – Mini Liga</h1>
+  <h1>CS Major – Liga Typów</h1>
   <nav>
     <button onclick="showTab('types')">Typy</button>
     <button onclick="showTab('ranking')">Ranking</button>
     <button id="adminTabBtn" onclick="showTab('admin')">Admin</button>
+    <button id="logoutBtn" onclick="logout()" style="display:none">Wyloguj</button>
   </nav>
 </header>
 
-<div id="loginModal" class="modal">
-  <h2>Logowanie Admin</h2>
-  <label>Nick:</label><input type="text" id="loginNick"><br>
-  <label>Hasło:</label><input type="password" id="loginPassword"><br>
-  <label><input type="checkbox" id="rememberMe"> Zapamiętaj mnie</label><br>
-  <button onclick="adminLogin()">Zaloguj</button>
+<!-- Logowanie / Rejestracja -->
+<div id="loginRegister" class="modal">
+  <h2>Logowanie / Rejestracja</h2>
+  <button onclick="showLogin()">Zaloguj się</button>
+  <button onclick="showRegister()">Zarejestruj się</button>
+  <div id="loginForm" style="display:none">
+    <input type="text" id="loginNick" placeholder="Nick">
+    <input type="password" id="loginPassword" placeholder="Hasło">
+    <label><input type="checkbox" id="rememberMe"> Zapamiętaj mnie</label><br>
+    <button onclick="loginUser()">Zaloguj</button>
+  </div>
+  <div id="registerForm" style="display:none">
+    <input type="text" id="regNick" placeholder="Nick">
+    <input type="password" id="regPassword" placeholder="Hasło">
+    <button onclick="registerUser()">Zarejestruj</button>
+  </div>
 </div>
 
+<!-- Typy -->
 <div id="types" class="tabContent">
   <h2>Oddaj typy</h2>
   <div id="typesContainer"></div>
   <button onclick="saveMyTypes()">Zapisz typy</button>
 </div>
 
+<!-- Ranking -->
 <div id="ranking" class="tabContent">
   <h2>Ranking</h2>
   <table id="rankingTable"></table>
 </div>
 
+<!-- Admin -->
 <div id="admin" class="tabContent">
   <h2>Panel Admina</h2>
+  <button onclick="addMatch()">Dodaj mecz</button>
   <div id="matchesContainer"></div>
   <button onclick="saveResults()">Zapisz wyniki</button>
 </div>
