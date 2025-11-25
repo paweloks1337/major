@@ -2,52 +2,66 @@
 // KONFIG JSONBIN
 // ========================
 const API_KEY = "6925e616d0ea881f40ffb922";
-const USERS_BIN_ID = "6925e58cd0ea881f40ffb821";
-const RESULTS_BIN_ID = "6925e5bbae596e708f707277";
+const USERS_BIN_ID = "6925e58cd0ea881f40ffb821";   // users.json
+const RESULTS_BIN_ID = "6925e5bbae596e708f707277"; // results.json
 
 // ========================
-// LOGIN / REGISTER
+// FUNKCJE DO UŻYTKOWNIKÓW
 // ========================
-function showLogin(){
-  document.getElementById("loginForm").style.display="block";
-  document.getElementById("registerForm").style.display="none";
-}
-
-function showRegister(){
-  document.getElementById("loginForm").style.display="none";
-  document.getElementById("registerForm").style.display="block";
-}
-
-async function fetchUsers(){
-  const res = await fetch(`https://api.jsonbin.io/v3/b/${USERS_BIN_ID}/latest`, {headers:{"X-Master-Key":API_KEY}});
-  const data = await res.json();
-  return data.record;
+async function fetchUsers() {
+  try {
+    const res = await fetch(`https://api.jsonbin.io/v3/b/${USERS_BIN_ID}/latest`, {
+      headers: { "X-Master-Key": API_KEY, "X-Bin-Meta":"false" }
+    });
+    const data = await res.json();
+    if(!data.record) return { users: [] };
+    if(!data.record.users) data.record.users=[];
+    return data.record;
+  } catch(e){
+    console.error("Błąd pobierania użytkowników:", e);
+    return { users: [] };
+  }
 }
 
 async function saveUsers(users){
-  await fetch(`https://api.jsonbin.io/v3/b/${USERS_BIN_ID}`, {method:"PUT", headers:{"Content-Type":"application/json","X-Master-Key":API_KEY}, body:JSON.stringify({users})});
+  try {
+    await fetch(`https://api.jsonbin.io/v3/b/${USERS_BIN_ID}`, {
+      method:"PUT",
+      headers: { "Content-Type":"application/json","X-Master-Key":API_KEY },
+      body: JSON.stringify({users})
+    });
+  } catch(e){ console.error("Błąd zapisu użytkowników:", e);}
 }
 
-// Rejestracja
+// ========================
+// REJESTRACJA
+// ========================
 async function registerUser(){
   const nick = document.getElementById("regNick").value.trim();
   const pass = document.getElementById("regPassword").value.trim();
   if(!nick || !pass){ alert("Podaj nick i hasło"); return; }
+
   const data = await fetchUsers();
-  if(data.users.find(u=>u.nick===nick)){ alert("Nick już istnieje"); return; }
-  data.users.push({nick,password:pass,isAdmin:false,types:[]});
+  if(data.users.find(u=>u.nick.toLowerCase()===nick.toLowerCase())){ alert("Nick już istnieje"); return; }
+
+  data.users.push({nick, password: pass, isAdmin: false, types: []});
   await saveUsers(data.users);
-  alert("Zarejestrowano! Zaloguj się.");
+  alert("Zarejestrowano! Teraz możesz się zalogować.");
   showLogin();
 }
 
-// Logowanie
+// ========================
+// LOGOWANIE
+// ========================
 async function loginUser(){
   const nick = document.getElementById("loginNick").value.trim();
   const pass = document.getElementById("loginPassword").value.trim();
   const data = await fetchUsers();
-  const user = data.users.find(u=>u.nick===nick && u.password===pass);
+
+  const user = data.users.find(u => u.nick.toLowerCase()===nick.toLowerCase() && u.password===pass);
   if(!user){ alert("Błędny nick lub hasło"); return; }
+
+  // zapis tokenów
   localStorage.setItem("userToken", user.nick);
   localStorage.setItem("isAdmin", user.isAdmin);
   document.getElementById("loginRegister").style.display="none";
@@ -56,7 +70,9 @@ async function loginUser(){
   loadPageForUser(user);
 }
 
-// Wyloguj
+// ========================
+// LOGOUT
+// ========================
 function logout(){
   localStorage.removeItem("userToken");
   localStorage.removeItem("isAdmin");
@@ -64,7 +80,7 @@ function logout(){
 }
 
 // ========================
-// TABY
+// TABS
 // ========================
 function showTab(tabId){
   document.querySelectorAll(".tabContent").forEach(div=>div.style.display="none");
@@ -72,21 +88,19 @@ function showTab(tabId){
 }
 
 // ========================
-// TOKEN
-// ========================
-function generateToken(){
-  let token = localStorage.getItem("userToken");
-  if(!token) token = crypto.randomUUID();
-  return token;
-}
-
-// ========================
 // TYPOWANIE
 // ========================
+async function getAllData(){
+  const usersData = await fetch(`https://api.jsonbin.io/v3/b/${USERS_BIN_ID}/latest`, {headers:{"X-Master-Key":API_KEY,"X-Bin-Meta":"false"}}).then(res=>res.json());
+  const resultsData = await fetch(`https://api.jsonbin.io/v3/b/${RESULTS_BIN_ID}/latest`, {headers:{"X-Master-Key":API_KEY,"X-Bin-Meta":"false"}}).then(res=>res.json());
+  return { users: usersData.record.users || [], matches: resultsData.record.matches || [] };
+}
+
+function isMatchOpen(matchTime){ return new Date() < new Date(matchTime); }
+
 async function loadTypes(){
   const data = await getAllData();
-  const container = document.getElementById("typesContainer");
-  container.innerHTML="";
+  const container = document.getElementById("typesContainer"); container.innerHTML="";
   const currentUser = localStorage.getItem("userToken");
   const user = data.users.find(u=>u.nick===currentUser);
   if(!user){ container.innerHTML="Błąd użytkownika"; return; }
@@ -101,8 +115,6 @@ async function loadTypes(){
       </div><br>`;
   });
 }
-
-function isMatchOpen(matchTime){ return new Date() < new Date(matchTime); }
 
 async function saveMyTypes(){
   const currentUser = localStorage.getItem("userToken");
@@ -182,7 +194,6 @@ async function saveResults(){
   const dateInputs=document.querySelectorAll(".adminDate");
   const scoreInputs=document.querySelectorAll(".adminScore");
   const typeInputs=document.querySelectorAll(".adminType");
-  const data = await getAllData();
   const matches=[];
   for(let i=0;i<dateInputs.length;i++){
     matches.push({
@@ -191,18 +202,9 @@ async function saveResults(){
       score:scoreInputs[i].value
     });
   }
-  await fetch(`https://api.jsonbin.io/v3/b/${RESULTS_BIN_ID}`,{method:"PUT",headers:{"Content-Type":"application/json","X-Master-Key":API_KEY},body:JSON.stringify({matches})});
+  await fetch(`https://api.jsonbin.io/v3/b/${RESULTS_BIN_ID}`, {method:"PUT", headers:{"Content-Type":"application/json","X-Master-Key":API_KEY}, body:JSON.stringify({matches})});
   alert("Zapisano wyniki!");
   loadAdminPanel();
-}
-
-// ========================
-// FETCH ALL DATA
-// ========================
-async function getAllData(){
-  const usersData = await fetch(`https://api.jsonbin.io/v3/b/${USERS_BIN_ID}/latest`, {headers:{"X-Master-Key":API_KEY}}).then(res=>res.json());
-  const resultsData = await fetch(`https://api.jsonbin.io/v3/b/${RESULTS_BIN_ID}/latest`, {headers:{"X-Master-Key":API_KEY}}).then(res=>res.json());
-  return {users:usersData.record.users||[], matches:resultsData.record.matches||[]};
 }
 
 // ========================
@@ -227,3 +229,9 @@ async function loadPageForUser(user){
   if(user.isAdmin) await loadAdminPanel();
   showTab("types");
 }
+
+// ========================
+// POKAZ FORM LOGOWANIA/REJESTRACJI
+// ========================
+function showLogin(){ document.getElementById("loginForm").style.display="block"; document.getElementById("registerForm").style.display="none";}
+function showRegister(){ document.getElementById("loginForm").style.display="none"; document.getElementById("registerForm").style.display="block";}
