@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+<meta charset="UTF-8">
+<title>CS Major – Admin</title>
+<link rel="stylesheet" href="style.css">
+<script src="script.js" defer></script>
+</head>
+<body>
+<h1>Panel Admina – Wprowadź wyniki</h1>
+
+<form id="resultsForm">
+  <h3>BO1</h3>
+  <input type="text" placeholder="Mecz 1 np. 13-11" class="resultInput" data-type="BO1"><br>
+  <input type="text" placeholder="Mecz 2 np. 13-9" class="resultInput" data-type="BO1"><br>
+
+  <h3>BO3</h3>
+  <input type="text" placeholder="Mecz 3 np. 2:1" class="resultInput" data-type="BO3"><br>
+  <input type="text" placeholder="Mecz 4 np. 1:2" class="resultInput" data-type="BO3"><br><br>
+
+  <button type="submit">Zapisz wyniki</button>
+</form>
+
+<script>
+document.getElementById("resultsForm").addEventListener("submit", async function(e){
+  e.preventDefault();
+  const inputs = document.querySelectorAll(".resultInput");
+  const results = Array.from(inputs).map(input=>({
+    type: input.dataset.type,
+    score: input.value
+  }));
+  await saveResults(results);
+});
+</script>
+
+</body>
+</html>
