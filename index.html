@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+<meta charset="UTF-8">
+<title>CS Major – Oddaj typy</title>
+<link rel="stylesheet" href="style.css">
+<script src="script.js" defer></script>
+</head>
+<body>
+<h1>CS Major – Oddaj Typy</h1>
+
+<form id="typesForm">
+  <label>Nick:</label>
+  <input type="text" id="nick" required><br><br>
+
+  <h3>Typy BO1</h3>
+  <input type="text" placeholder="Mecz 1 np. 13-11" class="typeInput" data-type="BO1"><br>
+  <input type="text" placeholder="Mecz 2 np. 13-9" class="typeInput" data-type="BO1"><br>
+
+  <h3>Typy BO3</h3>
+  <input type="text" placeholder="Mecz 3 np. 2:1" class="typeInput" data-type="BO3"><br>
+  <input type="text" placeholder="Mecz 4 np. 1:2" class="typeInput" data-type="BO3"><br><br>
+
+  <button type="submit">Zapisz typy</button>
+</form>
+
+<script>
+document.getElementById("typesForm").addEventListener("submit", async function(e){
+  e.preventDefault();
+  const nick = document.getElementById("nick").value;
+  const inputs = document.querySelectorAll(".typeInput");
+  const userTypes = Array.from(inputs).map(input => ({
+    type: input.dataset.type,
+    score: input.value
+  }));
+  await saveUserTypes(nick, userTypes);
+});
+</script>
+
+</body>
+</html>
