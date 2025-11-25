@@ -72,14 +72,20 @@ async function saveResultsBin(matches){
 async function registerUser(){
   const nick = document.getElementById("regNick").value.trim();
   const pass = document.getElementById("regPassword").value.trim();
-  if(!nick||!pass){alert("Podaj nick i hasło");return;}
+  if(!nick||!pass){ alert("Podaj nick i hasło"); return; }
+
   const data = await fetchUsers();
-  if(data.users.find(u=>u.nick.toLowerCase()===nick.toLowerCase())){alert("Nick już istnieje");return;}
-  data.users.push({nick,password:pass,isAdmin:false,types:[]});
+  if(data.users.find(u=>u.nick.toLowerCase()===nick.toLowerCase())){ alert("Nick już istnieje"); return; }
+
+  data.users.push({nick, password: pass, isAdmin: false, types: []});
   await saveUsers(data.users);
-  alert("Zarejestrowano! Zaloguj się.");
-  document.getElementById("loginForm").style.display="block";
-  document.getElementById("registerForm").style.display="none";
+
+  // odśwież dane użytkowników natychmiast
+  await fetchUsers();
+
+  alert("Zarejestrowano! Możesz się teraz zalogować.");
+  document.getElementById("loginForm").style.display = "block";
+  document.getElementById("registerForm").style.display = "none";
 }
 
 // ========================
@@ -88,14 +94,23 @@ async function registerUser(){
 async function loginUser(){
   const nick = document.getElementById("loginNick").value.trim();
   const pass = document.getElementById("loginPassword").value.trim();
+
   const data = await fetchUsers();
-  const user = data.users.find(u=>u.nick.toLowerCase()===nick.toLowerCase() && u.password===pass);
-  if(!user){alert("Błędny nick lub hasło"); return;}
+  const user = data.users.find(u => u.nick.toLowerCase() === nick.toLowerCase());
+
+  if(!user || user.password !== pass){
+    alert("Błędny nick lub hasło");
+    return;
+  }
+
+  // zapis w localStorage
   localStorage.setItem("userToken", user.nick);
   localStorage.setItem("isAdmin", user.isAdmin);
-  document.getElementById("loginRegister").style.display="none";
-  document.getElementById("logoutBtn").style.display="inline-block";
-  if(user.isAdmin) document.getElementById("adminTabBtn").style.display="inline-block";
+
+  document.getElementById("loginRegister").style.display = "none";
+  document.getElementById("logoutBtn").style.display = "inline-block";
+  if(user.isAdmin) document.getElementById("adminTabBtn").style.display = "inline-block";
+
   loadPageForUser(user);
 }
 
