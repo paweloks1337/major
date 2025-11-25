@@ -2,40 +2,49 @@
 <html lang="pl">
 <head>
 <meta charset="UTF-8">
-<title>CS Major – Oddaj typy</title>
+<title>CS Major – Mini Liga</title>
 <link rel="stylesheet" href="style.css">
 <script src="script.js" defer></script>
 </head>
 <body>
-<h1>CS Major – Oddaj Typy</h1>
 
-<form id="typesForm">
-  <label>Nick:</label>
-  <input type="text" id="nick" required><br><br>
+<header>
+  <h1>CS Major – Mini Liga</h1>
+  <nav>
+    <button onclick="showTab('types')">Typy</button>
+    <button onclick="showTab('ranking')">Ranking</button>
+    <button id="adminTabBtn" onclick="showTab('admin')">Admin</button>
+  </nav>
+</header>
 
-  <h3>Typy BO1</h3>
-  <input type="text" placeholder="Mecz 1 np. 13-11" class="typeInput" data-type="BO1"><br>
-  <input type="text" placeholder="Mecz 2 np. 13-9" class="typeInput" data-type="BO1"><br>
+<!-- Logowanie admina -->
+<div id="loginModal" class="modal">
+  <h2>Logowanie Admin</h2>
+  <label>Nick:</label><input type="text" id="loginNick"><br>
+  <label>Hasło:</label><input type="password" id="loginPassword"><br>
+  <label><input type="checkbox" id="rememberMe"> Zapamiętaj mnie</label><br>
+  <button onclick="adminLogin()">Zaloguj</button>
+</div>
 
-  <h3>Typy BO3</h3>
-  <input type="text" placeholder="Mecz 3 np. 2:1" class="typeInput" data-type="BO3"><br>
-  <input type="text" placeholder="Mecz 4 np. 1:2" class="typeInput" data-type="BO3"><br><br>
+<!-- Typy -->
+<div id="types" class="tabContent">
+  <h2>Oddaj typy</h2>
+  <div id="typesContainer"></div>
+  <button onclick="saveMyTypes()">Zapisz typy</button>
+</div>
 
-  <button type="submit">Zapisz typy</button>
-</form>
+<!-- Ranking -->
+<div id="ranking" class="tabContent">
+  <h2>Ranking</h2>
+  <table id="rankingTable"></table>
+</div>
 
-<script>
-document.getElementById("typesForm").addEventListener("submit", async function(e){
-  e.preventDefault();
-  const nick = document.getElementById("nick").value;
-  const inputs = document.querySelectorAll(".typeInput");
-  const userTypes = Array.from(inputs).map(input => ({
-    type: input.dataset.type,
-    score: input.value
-  }));
-  await saveUserTypes(nick, userTypes);
-});
-</script>
+<!-- Panel admina -->
+<div id="admin" class="tabContent">
+  <h2>Panel Admina</h2>
+  <div id="matchesContainer"></div>
+  <button onclick="saveResults()">Zapisz wyniki</button>
+</div>
 
 </body>
 </html>
