@@ -2,28 +2,26 @@ body {
   font-family: 'Arial', sans-serif;
   margin: 0;
   background: #111;
-  color: #FFD700; /* żółty */
+  color: #FFD700;
 }
 
 header {
   background: #000;
   padding: 10px 20px;
   display: flex;
-  align-items: center;
   justify-content: space-between;
+  align-items: center;
 }
-
-header h1 { margin:0; }
 
 nav button {
   margin-left: 10px;
   padding: 8px 12px;
   border: none;
-  background: #FFD700;
-  color: #000;
+  border-radius: 4px;
   font-weight: bold;
   cursor: pointer;
-  border-radius: 4px;
+  background: #FFD700;
+  color: #000;
 }
 
 nav button:hover { background: #FFA500; }
@@ -55,8 +53,3 @@ button { padding:8px 12px; border-radius:4px; margin-top:5px; }
 table { width: 90%; border-collapse: collapse; margin-top: 15px; }
 table, th, td { border: 1px solid #555; }
 th, td { padding: 8px; text-align:center; }
-
-.correct { background:#28a745; color:#fff; }
-.partial { background:#ffc107; color:#000; }
-.wrong { background:#dc3545; color:#fff; }
-.disabled { background:#555; color:#999; }
