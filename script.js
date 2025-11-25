@@ -1,146 +1,218 @@
 // ==============================
-// Konfiguracja JSONbin.io
+// KONFIGURACJA JSONBIN.IO
 // ==============================
-const API_KEY = "6925e616d0ea881f40ffb922";       // Twój X-Access-Key
-const TYPES_BIN_ID = "6925e58cd0ea881f40ffb821";   // Bin ID types.json
-const RESULTS_BIN_ID = "6925e5bbae596e708f707277";// Bin ID results.json
+const API_KEY = "6925e616d0ea881f40ffb922";
+const TYPES_BIN_ID = "6925e58cd0ea881f40ffb821";
+const RESULTS_BIN_ID = "6925e5bbae596e708f707277";
 
 // ==============================
-// Funkcja generowania tokenu
+// ADMINI I HASŁA
+// ==============================
+const admins = {
+  "paweloks": "haslo1",
+  "matty": "haslo2"
+};
+
+// ==============================
+// LOGOWANIE ADMINA
+// ==============================
+function adminLogin() {
+  const nick = document.getElementById("loginNick").value;
+  const pass = document.getElementById("loginPassword").value;
+  const remember = document.getElementById("rememberMe").checked;
+
+  if(admins[nick] && admins[nick] === pass) {
+    if(remember) localStorage.setItem("adminToken", nick);
+    else sessionStorage.setItem("adminToken", nick);
+    document.getElementById("loginModal").style.display = "none";
+    document.getElementById("adminTabBtn").style.display = "inline-block";
+    loadAdminPanel();
+    alert("Zalogowano jako admin!");
+  } else {
+    alert("Błędny nick lub hasło!");
+  }
+}
+
+function checkAdmin() {
+  return localStorage.getItem("adminToken") || sessionStorage.getItem("adminToken");
+}
+
+// ==============================
+// ZMIANA ZAKŁADEK
+// ==============================
+function showTab(tabId) {
+  document.querySelectorAll('.tabContent').forEach(div => div.style.display = 'none');
+  document.getElementById(tabId).style.display = 'block';
+}
+
+// ==============================
+// GENEROWANIE TOKENU UŻYTKOWNIKA
 // ==============================
 function generateToken() {
-    let token = localStorage.getItem("userToken");
-    if (!token) {
-        token = crypto.randomUUID();
-        localStorage.setItem("userToken", token);
-    }
-    return token;
+  let token = localStorage.getItem("userToken");
+  if (!token) {
+      token = crypto.randomUUID();
+      localStorage.setItem("userToken", token);
+  }
+  return token;
 }
 
 // ==============================
-// Zapis typów użytkownika
-// ==============================
-async function saveUserTypes(nick, userTypes) {
-    const token = generateToken();
-    let typesData = await fetch(`https://api.jsonbin.io/v3/b/${TYPES_BIN_ID}/latest`, {
-        headers: { "X-Master-Key": API_KEY }
-    }).then(res => res.json());
-
-    let users = typesData.record.users || [];
-
-    // Sprawdź czy token istnieje
-    const index = users.findIndex(u => u.token === token);
-    const userData = { nick, token, types: userTypes };
-
-    if (index > -1) {
-        users[index] = userData; // aktualizacja istniejącego
-    } else {
-        users.push(userData); // nowy użytkownik
-    }
-
-    // Zapisz do JSONbin
-    await fetch(`https://api.jsonbin.io/v3/b/${TYPES_BIN_ID}`, {
-        method: "PUT",
-        headers: {
-            "Content-Type": "application/json",
-            "X-Master-Key": API_KEY
-        },
-        body: JSON.stringify({ users })
-    });
-    alert("Typy zapisane! Twój token: " + token);
-}
-
-// ==============================
-// Pobranie własnych typów
-// ==============================
-async function getMyTypes(token) {
-    let typesData = await fetch(`https://api.jsonbin.io/v3/b/${TYPES_BIN_ID}/latest`, {
-        headers: { "X-Master-Key": API_KEY }
-    }).then(res => res.json());
-
-    let users = typesData.record.users || [];
-    const user = users.find(u => u.token === token);
-    return user ? user.types : null;
-}
-
-// ==============================
-// Zapis wyników przez admina
-// ==============================
-async function saveResults(results) {
-    await fetch(`https://api.jsonbin.io/v3/b/${RESULTS_BIN_ID}`, {
-        method: "PUT",
-        headers: {
-            "Content-Type": "application/json",
-            "X-Master-Key": API_KEY
-        },
-        body: JSON.stringify({ matches: results })
-    });
-    alert("Wyniki zapisane!");
-}
-
-// ==============================
-// Pobranie wyników i typów
+// POBRANIE DANYCH Z JSONBIN
 // ==============================
 async function getAllData() {
-    const typesData = await fetch(`https://api.jsonbin.io/v3/b/${TYPES_BIN_ID}/latest`, {
-        headers: { "X-Master-Key": API_KEY }
-    }).then(res => res.json());
-    const resultsData = await fetch(`https://api.jsonbin.io/v3/b/${RESULTS_BIN_ID}/latest`, {
-        headers: { "X-Master-Key": API_KEY }
-    }).then(res => res.json());
-    return {
-        users: typesData.record.users || [],
-        results: resultsData.record.matches || []
-    };
+  const typesData = await fetch(`https://api.jsonbin.io/v3/b/${TYPES_BIN_ID}/latest`, {
+      headers: { "X-Master-Key": API_KEY }
+  }).then(res => res.json());
+  const resultsData = await fetch(`https://api.jsonbin.io/v3/b/${RESULTS_BIN_ID}/latest`, {
+      headers: { "X-Master-Key": API_KEY }
+  }).then(res => res.json());
+  return {
+      users: typesData.record.users || [],
+      matches: resultsData.record.matches || []
+  };
 }
 
 // ==============================
-// Funkcja liczenia punktów
+// RENDEROWANIE FORMULARZA TYPÓW
 // ==============================
-function calculatePoints(userTypes, results) {
-    let points = 0;
-    for (let i = 0; i < results.length; i++) {
-        const result = results[i];
-        const user = userTypes[i];
+async function loadTypes() {
+  const data = await getAllData();
+  const container = document.getElementById("typesContainer");
+  container.innerHTML = "";
+  data.matches.forEach((m, index) => {
+    const open = isMatchOpen(m.scheduled);
+    container.innerHTML += `
+      <div>
+        <strong>Mecz ${index+1} (${m.type})</strong> - ${open ? "otwarty" : "zamknięty"}<br>
+        <input type="text" class="typeInput" data-index="${index}" data-type="${m.type}" ${!open ? "disabled" : ""} placeholder="np. 13-11 / 2:1">
+      </div><br>`;
+  });
+}
 
-        if (!user || !user.score) continue;
+// ==============================
+// SPRAWDZENIE CZY MECZ OTWARTY
+// ==============================
+function isMatchOpen(matchTime) {
+  const now = new Date();
+  const matchDate = new Date(matchTime);
+  return now < matchDate;
+}
 
-        // BO1
-        if (result.type === "BO1") {
-            if (user.score === result.score) points += 5;
-            else if (user.score.split("-")[0] === result.score.split("-")[0]) points += 3;
-        }
-        // BO3
-        if (result.type === "BO3") {
-            if (user.score === result.score) points += 7;
-            else if (user.score.split(":")[0] === result.score.split(":")[0]) points += 4;
-        }
+// ==============================
+// ZAPIS TYPÓW UŻYTKOWNIKA
+// ==============================
+async function saveMyTypes() {
+  const token = generateToken();
+  const nick = prompt("Podaj swój nick:");
+  const inputs = document.querySelectorAll(".typeInput");
+  const userTypes = Array.from(inputs).map(i => ({
+    type: i.dataset.type,
+    score: i.value
+  }));
+
+  let typesData = await fetch(`https://api.jsonbin.io/v3/b/${TYPES_BIN_ID}/latest`, {
+      headers: { "X-Master-Key": API_KEY }
+  }).then(res => res.json());
+  let users = typesData.record.users || [];
+
+  const index = users.findIndex(u => u.token === token);
+  const userData = { nick, token, types: userTypes };
+  if(index > -1) users[index] = userData;
+  else users.push(userData);
+
+  await fetch(`https://api.jsonbin.io/v3/b/${TYPES_BIN_ID}`, {
+    method: "PUT",
+    headers: { "Content-Type":"application/json","X-Master-Key":API_KEY },
+    body: JSON.stringify({ users })
+  });
+  alert("Typy zapisane! Twój token: " + token);
+}
+
+// ==============================
+// GENEROWANIE RANKINGU
+// ==============================
+async function generateRanking() {
+  const data = await getAllData();
+  const rankingTable = document.getElementById("rankingTable");
+  rankingTable.innerHTML = "<tr><th>#</th><th>Nick</th><th>Punkty</th></tr>";
+
+  const ranking = data.users.map(u => ({
+    nick: u.nick,
+    points: calculatePoints(u.types, data.matches)
+  }));
+  ranking.sort((a,b)=>b.points - a.points);
+
+  ranking.forEach((r,i)=>{
+    rankingTable.innerHTML += `<tr><td>${i+1}</td><td>${r.nick}</td><td>${r.points}</td></tr>`;
+  });
+}
+
+// ==============================
+// LICZENIE PUNKTÓW
+// ==============================
+function calculatePoints(userTypes, matches) {
+  let points = 0;
+  for(let i=0;i<matches.length;i++){
+    const result = matches[i];
+    const user = userTypes[i];
+    if(!user) continue;
+    if(result.type==="BO1"){
+      if(user.score === result.score) points+=5;
+      else if(user.score.split("-")[0] === result.score.split("-")[0]) points+=3;
     }
-    return points;
+    if(result.type==="BO3"){
+      if(user.score === result.score) points+=7;
+      else if(user.score.split(":")[0] === result.score.split(":")[0]) points+=4;
+    }
+  }
+  return points;
 }
 
 // ==============================
-// Generowanie rankingu
+// PANEL ADMINA
 // ==============================
-async function generateRanking(containerId) {
-    const data = await getAllData();
-    const users = data.users;
-    const results = data.results;
-
-    const ranking = users.map(u => {
-        return {
-            nick: u.nick,
-            points: calculatePoints(u.types, results)
-        };
-    });
-
-    // Sortowanie malejąco
-    ranking.sort((a, b) => b.points - a.points);
-
-    // Wyświetlanie w tabeli
-    const container = document.getElementById(containerId);
-    container.innerHTML = "<tr><th>#</th><th>Nick</th><th>Punkty</th></tr>";
-    ranking.forEach((r, index) => {
-        container.innerHTML += `<tr><td>${index + 1}</td><td>${r.nick}</td><td>${r.points}</td></tr>`;
-    });
+async function loadAdminPanel() {
+  if(!checkAdmin()) { alert("Brak dostępu!"); return; }
+  const data = await getAllData();
+  const container = document.getElementById("matchesContainer");
+  container.innerHTML = "";
+  data.matches.forEach((m,i)=>{
+    container.innerHTML += `
+      <div>
+        <strong>Mecz ${i+1} (${m.type})</strong><br>
+        Data: <input type="datetime-local" value="${m.scheduled ? new Date(m.scheduled).toISOString().slice(0,16) : ""}" class="adminDate" data-index="${i}"><br>
+        Wynik: <input type="text" value="${m.score || ""}" class="adminScore" data-index="${i}" placeholder="np. 13-11 / 2:1">
+      </div><br>`;
+  });
 }
+
+async function saveResults() {
+  if(!checkAdmin()){ alert("Brak dostępu!"); return; }
+  const dateInputs = document.querySelectorAll(".adminDate");
+  const scoreInputs = document.querySelectorAll(".adminScore");
+  const matches = [];
+  for(let i=0;i<dateInputs.length;i++){
+    matches.push({
+      type: dateInputs[i].dataset.type || "BO1",
+      scheduled: new Date(dateInputs[i].value).toISOString(),
+      score: scoreInputs[i].value
+    });
+  }
+  await fetch(`https://api.jsonbin.io/v3/b/${RESULTS_BIN_ID}`, {
+    method:"PUT",
+    headers:{ "Content-Type":"application/json","X-Master-Key":API_KEY },
+    body: JSON.stringify({ matches })
+  });
+  alert("Wyniki zapisane!");
+}
+
+// ==============================
+// INICJALIZACJA STRONY
+// ==============================
+window.addEventListener("load", ()=>{
+  showTab('types');
+  loadTypes();
+  generateRanking();
+  if(!checkAdmin()) document.getElementById("adminTabBtn").style.display="none";
+});
