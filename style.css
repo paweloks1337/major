@@ -30,20 +30,17 @@ nav button:hover {
   background: #0056b3;
 }
 
-.tabContent {
-  display: none;
-  padding: 20px;
-}
+.tabContent { display: none; padding: 20px; }
 
 .modal {
   background: #1f1f1f;
   padding: 20px;
-  margin: 20px;
+  margin: 20px auto;
   border-radius: 8px;
   max-width: 400px;
 }
 
-input[type="text"], input[type="password"] {
+input[type="text"], input[type="password"], input[type="datetime-local"] {
   padding: 5px;
   margin: 5px 0;
   width: 100%;
@@ -54,26 +51,11 @@ input[type="text"], input[type="password"] {
   color: #f0f0f0;
 }
 
-button {
-  padding: 8px 15px;
-  margin-top: 10px;
-  border-radius: 4px;
-}
+button { padding: 8px 15px; margin-top: 10px; border-radius: 4px; }
 
-table {
-  width: 80%;
-  border-collapse: collapse;
-  margin-top: 15px;
-}
-
-table, th, td {
-  border: 1px solid #555;
-}
-
-th, td {
-  padding: 8px;
-  text-align: center;
-}
+table { width: 80%; border-collapse: collapse; margin-top: 15px; }
+table, th, td { border: 1px solid #555; }
+th, td { padding: 8px; text-align: center; }
 
 .correct { background: #28a745; }
 .partial { background: #ffc107; }
